@@ -894,8 +894,8 @@ body {
 }
 
 .lm-video-main-stage.expanded .ai-floating-bubble {
-  bottom: 148px;
-  right: 32px;
+  bottom: 40px;
+  right: 40px;
 }
 
 .ai-floating-bubble.hidden {
@@ -1038,8 +1038,8 @@ body {
 }
 
 .lm-video-main-stage.expanded .lm-self-view {
-  bottom: 32px;
-  right: 32px;
+  bottom: 40px;
+  right: 40px;
 }
 
 .lm-self-view .lm-avatar {
