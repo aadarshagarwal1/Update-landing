@@ -1,4 +1,10 @@
 {
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "next/image": ["./src/lib/next-image.tsx"]
+    }
+  },
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },

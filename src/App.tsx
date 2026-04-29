@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
+import { motion } from "framer-motion";
 import logo from "./assets/mentorque-logo.png";
 import chromeLogo from "./assets/chrome-logo.svg";
 import calendarIcon from "./assets/calendar-icon.svg";
+import { HeroScrollDemo } from "@/components/ui/hero-scroll-demo";
 
 const proofItems = [
   { name: "Priya S.", company: "Amazon", time: "2h ago" },
@@ -19,10 +21,60 @@ const capabilities = [
 ];
 
 function App() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const mentorSectionRef = useRef<HTMLElement>(null);
+  const macosCanvasRef = useRef<HTMLDivElement>(null);
+  const [isExtensionOpen, setIsExtensionOpen] = useState(false);
+  const isPlansPage = window.location.pathname === "/plans";
+
+  useEffect(() => {
+    if (!mentorSectionRef.current) return;
+
+    let openTimer: number | null = null;
+    let didAutoOpen = false;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || didAutoOpen) return;
+
+        // Trigger only when user scrolls into section.
+        didAutoOpen = true;
+        openTimer = window.setTimeout(() => {
+          setIsExtensionOpen(true);
+        }, 450);
+      },
+      {
+        threshold: 0.45,
+      }
+    );
+
+    observer.observe(mentorSectionRef.current);
+
+    return () => {
+      observer.disconnect();
+      if (openTimer) window.clearTimeout(openTimer);
+    };
+  }, []);
+
+  if (isPlansPage) {
+    return (
+      <div className="min-h-screen bg-black">
+        <section
+          className="relative h-screen w-full bg-cover bg-center"
+          style={{
+            backgroundImage: 'url("/WhatsApp Image 2026-04-26 at 12.33.06.jpeg")',
+          }}
+        >
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-black/0 via-black/85 to-black" />
+        </section>
+        <section className="bg-black">
+          <HeroScrollDemo />
+        </section>
+      </div>
+    );
+  }
 
   return (
-    <div className="container">
+    <div className="landing-container">
       {/* Background */}
       <div className="background-scene">
         <div className="bg-image" />
@@ -52,14 +104,11 @@ function App() {
           {/* Headline */}
           <h1 className="headline anim-2">
             <span className="hl-line">Apply less.</span>
-            <span className="hl-line hl-italic">Get hired faster.</span>
+            <span className="hl-line hl-italic text-white
+            ">Get hired faster.</span>
           </h1>
 
-          {/* Subtitle */}
-          <p className="subtext anim-3">
-            AI resume tools, real mentor connections, and agentic outreach — all
-            in one system built to get you the role.
-          </p>
+   
 
           {/* CTAs */}
           <div className="cta-group anim-4">
@@ -105,11 +154,7 @@ function App() {
           ))}
         </div>
 
-        {/* Bottom Right: Social Proof Badge */}
-        <div className="proof-badge anim-6">
-          <span className="proof-dot" />
-          <span>70+ hired at Amazon · EY · Microsoft · Vodafone</span>
-        </div>
+  
 
         {/* Scroll Indicator */}
         <div className="scroll-indicator">
@@ -118,20 +163,18 @@ function App() {
       </main>
 
       {/* Live Mentor Connect Feature Section */}
-      <section className="live-mentor-section">
+      <section className="live-mentor-section" ref={mentorSectionRef}>
         <div className="lm-gradient-bg" />
         
         <div className="lm-content">
-          <div className="lm-header">
-            <span className="lm-tag">Live Mentor Connect</span>
-            <h2 className="lm-title">Real mentorship, anytime you need it</h2>
-            <p className="lm-subtitle">
-              Connect with experienced professionals for career guidance, interview prep, 
-              and personalized advice — all through seamless video sessions.
-            </p>
-          </div>
-
-          <div className="macos-screen">
+          <motion.div
+            className="macos-screen"
+            initial={{ opacity: 0, y: 84, scale: 0.86, rotateX: 14, filter: "blur(10px)" }}
+            whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0, filter: "blur(0px)" }}
+            viewport={{ once: true, amount: 0.35 }}
+            transition={{ type: "spring", stiffness: 110, damping: 18, mass: 0.9 }}
+            style={{ transformOrigin: "center top" }}
+          >
             {/* macOS Top Bar */}
             <div className="macos-top-bar">
               <div className="top-bar-left">
@@ -166,197 +209,127 @@ function App() {
                   </div>
                   <div className="lm-window-title">
                     <img src={logo} alt="Mentorque" className="meet-logo-small" />
-                    <span>Career Strategy Session</span>
+                    <span>Mentorque Extension Preview</span>
                   </div>
                 </div>
-                
-                <div className="lm-video-canvas">
-                  <div className={`lm-video-main-stage ${!isSidebarOpen ? "expanded" : ""}`}>
-                    <div className="lm-video-participant lm-mentor">
-                      <div className="lm-avatar-placeholder">
-                        <div className="lm-avatar lm-mentor-avatar">
-                          <svg viewBox="0 0 80 80" fill="none">
-                            <circle cx="40" cy="28" r="16" fill="#d4a574"/>
-                            <ellipse cx="40" cy="70" rx="28" ry="24" fill="#7c6e5a"/>
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="lm-participant-name">
-                        <svg viewBox="0 0 24 24" width="12" height="12" fill="#fff">
-                          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-                        </svg>
-                        Sarah K. (Mentor)
-                      </div>
-                      <div className="lm-mic-status">
-                        <div className="mic-wave">
-                          <span></span>
-                          <span></span>
-                          <span></span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Floating Self-View (Classic Meet Style) */}
-                    <div className="lm-self-view">
-                      <div className="lm-avatar lm-mentee-avatar">
-                        <svg viewBox="0 0 80 80" fill="none">
-                          <circle cx="40" cy="28" r="16" fill="#e8c4b8"/>
-                          <ellipse cx="40" cy="70" rx="28" ry="24" fill="#8b7355"/>
-                        </svg>
-                      </div>
-                      <div className="lm-participant-name">You</div>
-                    </div>
+                <div className="lm-video-canvas extension-canvas" ref={macosCanvasRef}>
+                  <div className="extension-hero-text">
+                    <span className="extension-eyebrow">Mentorque AI Assistant</span>
+                    <h2>Talks what you talk, Sees what you see.</h2>
+                    <p>Live meeting support with instant role-aware responses.</p>
+                  </div>
 
-                    <button 
-                      className={`ai-floating-bubble ${isSidebarOpen ? "hidden" : ""}`}
-                      onClick={() => setIsSidebarOpen(true)}
-                      title="Open Mentorque AI"
+                  {!isExtensionOpen && (
+                    <button
+                      className="entry-launcher-btn"
+                      onClick={() => setIsExtensionOpen(true)}
+                      aria-label="Open Mentorque AI"
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                      <span className="entry-launcher-icon" />
+                      <span>Mentorque AI</span>
                     </button>
-                  </div>
+                  )}
 
-                  <div className={`lm-meet-sidebar ${!isSidebarOpen ? "collapsed" : ""}`}>
-                    <div className="lm-sidebar-header">
-                      <div className="sidebar-title-group">
-                        <div className="ai-sparkle-icon">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                  {isExtensionOpen && (
+                    <motion.div
+                      className="extension-panel overlay-mimic"
+                      initial={{
+                        opacity: 0,
+                        y: 140,
+                        x: 26,
+                        scale: 0.56,
+                        scaleY: 0.12,
+                        rotateX: 18,
+                        filter: "blur(14px)",
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        x: 0,
+                        scale: 1,
+                        scaleY: 1,
+                        rotateX: 0,
+                        filter: "blur(0px)",
+                      }}
+                      transition={{
+                        duration: 1.15,
+                        ease: [0.15, 0.9, 0.2, 1],
+                      }}
+                      style={{ transformOrigin: "100% 100%" }}
+                    >
+                      <div className="overlay-mimic-main">
+                        <div className="overlay-topbar">
+                          <div className="overlay-topbar-title">Keywords</div>
+                          <div className="overlay-topbar-actions">
+                            <span>◔</span>
+                            <span>⌗</span>
+                            <span>◉</span>
+                            <button className="overlay-logout-btn">Logout</button>
+                          </div>
+                          <button
+                            className="panel-close-btn"
+                            onClick={() => setIsExtensionOpen(false)}
+                            aria-label="Close extension"
+                          >
+                            ×
+                          </button>
                         </div>
-                        <h3>Mentorque AI</h3>
+
+                        <div className="overlay-keywords-content">
+                          <div className="overlay-ai-badge">AI-Powered Analysis</div>
+                          <h3 className="overlay-title">Keywords &amp; Skills Analyzer</h3>
+                        
+
+                          <div className="overlay-job-card">
+                            <div className="overlay-job-top">
+                              <span className="ms-logo" aria-hidden="true">
+                                <span />
+                                <span />
+                                <span />
+                                <span />
+                              </span>
+                              <span>Microsoft · India</span>
+                            </div>
+                            <div className="overlay-job-role">ROLE: SDE 2 (Microsoft)</div>
+                            <div className="overlay-job-desc">
+                              DESCRIPTION: Company analysis focused on system design, APIs,
+                              cloud fundamentals, and ownership signals.
+                            </div>
+                            <div className="overlay-job-tag">Auto-scraped</div>
+                          </div>
+
+                          <button className="overlay-generate-btn">
+                            Analyze Keywords ✨
+                          </button>
+
+                          <div className="overlay-result-card matching">
+                            <div className="overlay-result-title">✅ Matching Skills</div>
+                            <div className="overlay-result-sub">Skills found in your profile (9)</div>
+                            <div className="extension-tags">
+                              <span>Node.js</span>
+                              <span>TypeScript</span>
+                              <span>React.js</span>
+                              <span>Next.js</span>
+                              <span>PostgreSQL</span>
+                              <span>RESTful APIs</span>
+                              <span>Git</span>
+                              <span>Docker</span>
+                              <span>AWS</span>
+                            </div>
+                          </div>
+
+                          <div className="overlay-result-card missing">
+                            <div className="overlay-result-title">❌ Missing Skills</div>
+                            <div className="overlay-result-sub">Skills to add to your profile (1)</div>
+                            <div className="extension-tags">
+                              <span>Supabase</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="overlay-track-footer">Track Job</div>
                       </div>
-                      <button className="close-sidebar" onClick={() => setIsSidebarOpen(false)}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                      </button>
-                    </div>
-                    
-                    <div className="lm-notetaker-content">
-                      <div className="notetaker-status-bar">
-                        <div className="bot-status-pill">
-                          <span className="status-dot-active"></span>
-                          Agent Active
-                        </div>
-                        <span className="live-indicator">LIVE TRANSCRIPTION</span>
-                      </div>
-
-                      <div className="transcript-feed">
-                        <div className="transcript-entry">
-                          <div className="entry-header">
-                            <span className="entry-author mentor-label">Sarah K.</span>
-                            <span className="entry-time">10:00 AM</span>
-                          </div>
-                          <p className="entry-text">"Hi there! Let's dive into your portfolio. I see some interesting React projects here."</p>
-                        </div>
-
-                        <div className="transcript-entry">
-                          <div className="entry-header">
-                            <span className="entry-author">You</span>
-                            <span className="entry-time">10:01 AM</span>
-                          </div>
-                          <p className="entry-text">"Thanks, Sarah! I've been focusing on building scalable frontend architectures recently."</p>
-                        </div>
-
-                        <div className="transcript-entry">
-                          <div className="entry-header">
-                            <span className="entry-author mentor-label">Sarah K.</span>
-                            <span className="entry-time">10:02 AM</span>
-                          </div>
-                          <p className="entry-text">"That's a great point about your React experience. How did you handle state management in that project?"</p>
-                        </div>
-
-                        <div className="transcript-entry">
-                          <div className="entry-header">
-                            <span className="entry-author">You</span>
-                            <span className="entry-time">10:04 AM</span>
-                          </div>
-                          <p className="entry-text active-typing">"I primarily used Redux Toolkit for global state, but for this specific feature, I implemented a custom hook with Context API to keep it lightweight..."</p>
-                        </div>
-
-                        <div className="transcript-entry">
-                          <div className="entry-header">
-                            <span className="entry-author mentor-label">Sarah K.</span>
-                            <span className="entry-time">10:05 AM</span>
-                          </div>
-                          <p className="entry-text">"Excellent choice. Balancing global state and local context is key for performance."</p>
-                        </div>
-                      </div>
-
-                      <div className="ai-realtime-summary">
-                        <div className="summary-section">
-                          <div className="section-header">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            Key Insights
-                          </div>
-                          <div className="insight-tags">
-                            <span className="insight-tag">Redux Toolkit</span>
-                            <span className="insight-tag">Architecture</span>
-                          </div>
-                        </div>
-
-                        <div className="summary-section">
-                          <div className="section-header">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                            Action Items
-                          </div>
-                          <ul className="action-list">
-                            <li>Follow up on Clean Code principles</li>
-                            <li>Send portfolio link</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="sidebar-footer">
-                      <button className="btn-generate-report">
-                        Generate Full Report
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="lm-meet-controls">
-                  <div className="lm-meet-left">
-                    <span className="meet-time">10:04 AM</span>
-                    <span className="meet-divider">|</span>
-                    <span className="meet-code">career-prep-xyz</span>
-                  </div>
-                  
-                  <div className="lm-meet-center">
-                    <button className="meet-btn" title="Turn off microphone">
-                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-                    </button>
-                    <button className="meet-btn" title="Turn off camera">
-                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M18 10.48V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4.48l4 3.98v-11l-4 3.98zM16 18H4V6h12v12z"/></svg>
-                    </button>
-                    <button className="meet-btn" title="Raise hand">
-                      <img src="https://cdn.creazilla.com/emojis/46398/raised-hand-emoji-clipart-lg.png" alt="Raise hand" className="meet-emoji-icon" />
-                    </button>
-                    <button className="meet-btn" title="Present now">
-                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 18H4V6h16v12zm0-14H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM12 8l-4 4h3v4h2v-4h3l-4-4z"/></svg>
-                    </button>
-                    <button className="meet-btn" title="More options">
-                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                    </button>
-                    <button className="meet-btn meet-btn-danger" title="Leave call">
-                      <svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
-                    </button>
-                  </div>
-                  
-                  <div className="lm-meet-right">
-                    <button className="meet-action-btn" title="Meeting details">
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M11 17h2v-6h-2v6zm1-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-                    </button>
-                    <button className="meet-action-btn active-panel" title="Chat with everyone">
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
-                    </button>
-                    <button className="meet-action-btn" title="Activities">
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2l-5.5 9h11L12 2zm0 3.84L13.93 9h-3.86L12 5.84zM17.5 13c-2.49 0-4.5 2.01-4.5 4.5s2.01 4.5 4.5 4.5 4.5-2.01 4.5-4.5-2.01-4.5-4.5-4.5zm0 7c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM3 21.5h8v-8H3v8zm2-6h4v4H5v-4z"/></svg>
-                    </button>
-                    <button className="meet-action-btn" title="Host controls">
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-                    </button>
-                  </div>
+                    </motion.div>
+                  )}
                 </div>
               </div>
             </div>
@@ -398,7 +371,7 @@ function App() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
     </div>
